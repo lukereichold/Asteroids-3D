@@ -1,0 +1,7 @@
+# Sounds to Create:
+
+- Spaceship hit
+- Spaceship fires
+- Spaceship thrusters
+- Asteroid is hit
+- 

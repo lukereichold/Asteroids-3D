@@ -5,7 +5,31 @@
 var Spaceship = function() {
     THREE.Object3D.call(this);
     
-    var self = this; // so we can access from callback
+    // for accessing from inner closures below
+    var self = this;
+    
+    // Define starting position
+    self.x = 10;
+    self.y = 10;
+    
+    self.vx = 0;
+    self.vy = 0;
+    
+    self.speed = 0.5;
+    
+    loadModel(self);
+}
+
+Spaceship.prototype = Object.create(THREE.Object3D.prototype);
+Spaceship.constructor = Spaceship;
+
+// Move this spaceship
+Spaceship.prototype.move = function() {
+    // Coming Soon
+}
+
+function loadModel(self) {
+    
     var textureLoader = new THREE.TextureLoader();
     var texture = textureLoader.load('textures/steel.jpg');
     texture.wrapS = THREE.RepeatWrapping;
@@ -25,14 +49,6 @@ var Spaceship = function() {
         self.add(object);
 		object.position.y = 0;
 	}, onProgress, onError );
-}
-
-Spaceship.prototype = Object.create(THREE.Object3D.prototype);
-Spaceship.constructor = Spaceship;
-
-// Move this spaceship
-Spaceship.prototype.move = function() {
-    // Coming Soon
 }
 
 // Output obj loading progress to console

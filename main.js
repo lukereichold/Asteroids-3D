@@ -12,6 +12,8 @@ var asteroids = [];
 var blasts = [];
 var blastMeshes = [];
 
+var speed = 0.2;
+
 setup();
 
 addBackground();
@@ -35,7 +37,6 @@ function setup() {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
     }
     
-    window.addEventListener('keydown', keydown);
     addStats();
 }
 
@@ -62,6 +63,9 @@ function render() {
         blastMeshes[i].position.copy(blasts[i].position);
         blastMeshes[i].quaternion.copy(blasts[i].quaternion);
     }
+    
+    // Keydown listener
+    kd.tick();
     
     if (DEBUG) {
         controls.update();        
@@ -95,38 +99,25 @@ function fireBlaster() {
 }
 
 // Keyboard controls for player motion. 
-// TODO: make motion more fluid + use physics
-function keydown(event) {
-	
-    var speed = 0.5;
-    switch (event.keyCode) {
-        case 32: // spacebar
-            // fire blaster
-            fireBlaster();
-            console.log("Firing blaster!");
-            break;
+kd.SPACE.down(function () {
+    console.log("SPACE");
+});
 
-        case 65: // A
-            // Rotate player counter-clockwise (to Left)
-            ship.rotateY(speed);
-            break;
-    
-        case 68: // D
-            // Rotate player clockwise (to Right)
-            ship.rotateY(-speed);
-            break;
-            
-        case 83: // S
-            // Move player forward 
-            ship.translateZ(5);
-            break;
-            
-        case 87: // W
-            // Move player backward	
-            ship.translateZ(-5);
-            break;
-    }
-}
+kd.A.down(function () {
+    // Rotate player counter-clockwise
+    ship.rotateY(speed);
+});
+
+kd.D.down(function () {
+    // Rotate player clockwise
+    ship.rotateY(-speed);
+});
+
+kd.W.down(function () {
+    // Move player forward
+    ship.translateZ(-5);
+});
+
 
 function smoothSurface(m) {
     if (m.geometry instanceof THREE.BufferGeometry) {

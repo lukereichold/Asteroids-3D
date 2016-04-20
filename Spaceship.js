@@ -8,15 +8,20 @@ var Spaceship = function() {
     // for accessing from inner closures below
     var self = this;
     
-    // Define starting position
-    self.x = 10;
-    self.y = 10;
+    // Default starting position
+    self.x = 0;
+    self.y = 0;
     
-    self.vx = 0;
-    self.vy = 0;
+    self.vx = 0.0;
+    self.vy = 0.0;
     
-    self.speed = 0.5;
+    self.isAccelerating = false;
+    self.friction = 0.95;
+    self.rotationSpeed = 0.04;
+    self.angularPosition = 0.0;
+    self.speed = 0.25;
     
+    // TODO: add graphic to indicate which direction ship is facing!
     loadModel(self);
 }
 
@@ -25,7 +30,50 @@ Spaceship.constructor = Spaceship;
 
 // Move this spaceship
 Spaceship.prototype.move = function() {
-    // Coming Soon
+
+    if (this.isAccelerating) {
+        console.log("vx / vy : " + this.vx + ", " + this.vy);
+        this.vy += Math.sin(this.angularPosition) * this.speed;
+        this.vx += Math.cos(this.angularPosition) * this.speed;
+        // TODO: cap max speed
+    } 
+    else {
+        // Should slow down from "friction"
+        this.vy *= this.friction;
+        this.vx *= this.friction;
+    }
+    
+    this.y += this.vy;
+    this.x += this.vx;
+    
+    var WIDTH = window.innerWidth / 2;
+    var HEIGHT = window.innerHeight / 2;
+
+	if (this.x > WIDTH) {
+    	this.x = -WIDTH;
+	} else if (this.x < -WIDTH) {
+    	this.x = WIDTH;
+	}
+
+    if (this.y > HEIGHT) {
+        this.y = -HEIGHT;
+    } else if (this.y < -HEIGHT) {
+        this.y = HEIGHT;
+    }
+    
+    // allowed to draw itself in the scene from here?
+    this.position.x = this.x;
+    this.position.z = this.y;
+}
+
+Spaceship.prototype.rotateLeft = function() {
+//     this.rotateY(this.rotationSpeed);
+    this.angularPosition -= this.rotationSpeed;
+}
+
+Spaceship.prototype.rotateRight = function() {
+//     this.rotateY(-this.rotationSpeed);
+    this.angularPosition += this.rotationSpeed;
 }
 
 function loadModel(self) {
@@ -45,7 +93,7 @@ function loadModel(self) {
                 child.material = material;
             }
         });
-        object.scale.divideScalar(6);
+        object.scale.divideScalar(10);
         self.add(object);
 		object.position.y = 0;
 	}, onProgress, onError );

@@ -35,6 +35,8 @@ function setup() {
     
     if (DEBUG) {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
+        var axisHelper = new THREE.AxisHelper( 500 );
+        scene.add( axisHelper );
     }
     
     addStats();
@@ -67,6 +69,8 @@ function render() {
     // Keydown listener
     kd.tick();
     
+    ship.move()
+    
     if (DEBUG) {
         controls.update();        
     }
@@ -94,30 +98,29 @@ function addLights() {
 
 function fireBlaster() {
     
-    var shootDirection = new THREE.Vector3();
-    
+    var shootDirection = new THREE.Vector3();   
 }
 
 // Keyboard controls for player motion. 
 kd.SPACE.down(function () {
-    console.log("SPACE");
-});
-
-kd.A.down(function () {
-    // Rotate player counter-clockwise
-    ship.rotateY(speed);
-});
-
-kd.D.down(function () {
-    // Rotate player clockwise
-    ship.rotateY(-speed);
+    console.log("Firing Blaster!");
 });
 
 kd.W.down(function () {
-    // Move player forward
-    ship.translateZ(-5);
+    ship.isAccelerating = true;
 });
 
+kd.W.up(function () {
+    ship.isAccelerating = false;
+});
+
+kd.A.down(function () {
+    ship.rotateLeft();
+});
+
+kd.D.down(function () {
+    ship.rotateRight();
+});
 
 function smoothSurface(m) {
     if (m.geometry instanceof THREE.BufferGeometry) {

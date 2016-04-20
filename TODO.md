@@ -1,6 +1,5 @@
 ## To Do:
-- come around sides of map / screen
-- blaster?
+- blaster
 
 
 ## Enhancements:

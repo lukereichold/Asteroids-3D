@@ -3,7 +3,7 @@
 // Final Project: Asteroids
 
 var scene = new THREE.Scene();
-var DEBUG = true;
+var DEBUG = false;
 var stats, camera, renderer, controls;
 
 // Objects
@@ -13,6 +13,8 @@ var blasts = [];
 var blastMeshes = [];
 
 var speed = 0.2;
+var WIDTH = window.innerWidth;
+var HEIGHT = window.innerHeight;
 
 setup();
 
@@ -24,13 +26,13 @@ render();
 
 function setup() {
     // Renderer
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
     
     // Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 500, 0); // camera from above
+    camera.position.set(0, 400, 0); // camera from above
     camera.lookAt(new THREE.Vector3(0,0,0));
     
     if (DEBUG) {

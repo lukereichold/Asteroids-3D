@@ -21,8 +21,12 @@ var Spaceship = function() {
     self.angularPosition = 0.0;
     self.speed = 0.25;
     
-    // TODO: add graphic to indicate which direction ship is facing!
-    loadModel(self);
+    // For Beta, I decided to hold off on the model because currently:
+	// 1.) We cannot tell exactly which direction it is pointing
+	// 2.) It's off-center, and therefore making rotation look weird.
+    // loadModel(self);
+    
+    draw(self);
 }
 
 Spaceship.prototype = Object.create(THREE.Object3D.prototype);
@@ -48,6 +52,10 @@ Spaceship.prototype.move = function() {
     
     var WIDTH = window.innerWidth / 2;
     var HEIGHT = window.innerHeight / 2;
+    console.log("W WIDTH: " + WIDTH);
+    console.log("W HEIGHT: " + HEIGHT);
+    console.log("(x, y): " + this.x + ", " + this.y);
+
 
 	if (this.x > WIDTH) {
     	this.x = -WIDTH;
@@ -67,13 +75,31 @@ Spaceship.prototype.move = function() {
 }
 
 Spaceship.prototype.rotateLeft = function() {
-//     this.rotateY(this.rotationSpeed);
+    this.rotateY(+this.rotationSpeed);
     this.angularPosition -= this.rotationSpeed;
 }
 
 Spaceship.prototype.rotateRight = function() {
-//     this.rotateY(-this.rotationSpeed);
+    this.rotateY(-this.rotationSpeed);
     this.angularPosition += this.rotationSpeed;
+}
+
+function draw(self) {
+	
+	var side = 10;
+	var geo = new THREE.Geometry(); 
+	geo.vertices.push(new THREE.Vector3(side,  1.0, 0.0));
+	geo.vertices.push(new THREE.Vector3(-0.5 * side, 1.0, -0.5 * side));
+	geo.vertices.push(new THREE.Vector3(-0.5 * side, 1.0, 0.5 * side));
+	geo.faces.push(new THREE.Face3(0, 1, 2)); 
+	
+	var material = new THREE.MeshBasicMaterial({ 
+		color:0xFFFFFF, 
+		side:THREE.DoubleSide 
+	}); 
+	
+	var mesh = new THREE.Mesh(geo, material); 
+	self.add(mesh);
 }
 
 function loadModel(self) {
@@ -97,6 +123,18 @@ function loadModel(self) {
         self.add(object);
 		object.position.y = 0;
 	}, onProgress, onError );
+
+	// Give it a "nose" to see which direction it's pointing.
+	/*
+	var LEN = 100;
+	var geometry = new THREE.Geometry();
+	geometry.vertices.push(
+	    new THREE.Vector3( 0, 5, -30),
+	    new THREE.Vector3( 0, 5, 0 )
+	);
+	var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({color: 0xff000	0, linewidth:50}));
+	self.add(line);
+	*/
 }
 
 // Output obj loading progress to console

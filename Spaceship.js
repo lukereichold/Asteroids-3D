@@ -1,6 +1,8 @@
 // Spaceship.js
 // Luke Reichold - CSCI 3820
 
+var MAX_SPEED = 15;
+
 // Subclassing Object3D to represent main spaceship player object.
 var Spaceship = function() {
     THREE.Object3D.call(this);
@@ -37,9 +39,14 @@ Spaceship.prototype.move = function() {
 
     if (this.isAccelerating) {
         console.log("vx / vy : " + this.vx + ", " + this.vy);
-        this.vy += Math.sin(this.angularPosition) * this.speed;
-        this.vx += Math.cos(this.angularPosition) * this.speed;
-        // TODO: cap max speed
+
+        // Cap the max speed
+		if (Math.abs(this.vx) < MAX_SPEED) {
+	        this.vx += Math.cos(this.angularPosition) * this.speed;			
+		}
+		if (Math.abs(this.vy) < MAX_SPEED) {
+	        this.vy += Math.sin(this.angularPosition) * this.speed;	
+		}
     } 
     else {
         // Should slow down from "friction"

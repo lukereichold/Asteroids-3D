@@ -21,6 +21,7 @@ setup();
 addBackground();
 addLights();
 addShip()
+addAsteroids(8);
 
 render();
 
@@ -49,6 +50,15 @@ function addShip() {
     scene.add(ship);
 }
 
+// Add given number of asteroids to the scene
+function addAsteroids(number) {
+    for (var i=0; i < number; i++) { 
+        var body = new Asteroid();
+        asteroids.push(body);
+        scene.add(body);
+    }
+}
+
 function addStats() {
     // Create div and display performance stats
     stats = new Stats();
@@ -72,6 +82,11 @@ function render() {
     kd.tick();
     
     ship.move()
+    
+    // Move all asteroids
+    for (var i=0; i < asteroids.length; i++) {
+        asteroids[i].move();
+    }
     
     if (DEBUG) {
         controls.update();        
@@ -99,13 +114,14 @@ function addLights() {
 }
 
 function fireBlaster() {
-    
+    console.log("Firing blaster!");
     var shootDirection = new THREE.Vector3();   
+    // Coming soon!
 }
 
 // Keyboard controls for player motion. 
 kd.SPACE.down(function () {
-    console.log("Firing Blaster!");
+    fireBlaster();
 });
 
 kd.W.down(function () {

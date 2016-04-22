@@ -1,21 +1,65 @@
 // Asteroid.js
 // Luke Reichold - CSCI 3820
 
-// Subclassing Object3D to represent main Asteroid player object.
-var Asteroid = function(material, radius, distance, rotationSpeed) {
+// Subclassing Object3D to represent an Asteroid object.
+var Asteroid = function() {
     THREE.Object3D.call(this);
-    this.orbiters = []
-    this.pivots = []
-    this.distance = distance;
-    this.rotationSpeed = rotationSpeed;
+    
+    var self = this;
+    var PADDING = 30;
+    var WIDTH = window.innerWidth / 2;
+    var HEIGHT = window.innerHeight / 2;
+    
+    var radius = getRandomInt(2, 25);
+    
+    // Default starting position
+    self.x = getRandomInt(-WIDTH + PADDING, WIDTH - PADDING);
+    self.y = getRandomInt(-HEIGHT + PADDING, HEIGHT - PADDING);
+        
+    // Default component speeds are random between -5 to 5
+    self.vx = getRandom(-5, 5);
+    self.vy = getRandom(-5, 5);
+    
+    var material = new THREE.MeshBasicMaterial({ color:0x964B00 }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);
     this.add(new THREE.Mesh(geometry, material));
+    
+    self.position.x = self.x;
+    self.position.y = radius;
+    self.position.z = self.y;
 }
+
 Asteroid.prototype = Object.create(THREE.Object3D.prototype);
 Asteroid.constructor = Asteroid;
 
-// Move this Asteroid
 Asteroid.prototype.move = function() {
-    // Coming Soon
+
+    this.y += this.vy;
+    this.x += this.vx;
+
+    // Check if surpasses frame
+	if (this.x > WIDTH) {
+    	this.x = -WIDTH;
+	} else if (this.x < -WIDTH) {
+    	this.x = WIDTH;
+	}
+
+    if (this.y > HEIGHT) {
+        this.y = -HEIGHT;
+    } else if (this.y < -HEIGHT) {
+        this.y = HEIGHT;
+    }
+    
+    this.position.x = this.x;
+    this.position.z = this.y;
 }
 
+// Returns random Real number between min (inclusive) and max (exclusive)
+function getRandom(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Returns random int between min (incl) and max (incl)
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}

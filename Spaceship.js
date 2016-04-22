@@ -23,9 +23,9 @@ var Spaceship = function() {
     self.angularPosition = 0.0;
     self.speed = 0.25;
     
-    // For Beta, I decided to hold off on the model because currently:
+    // For Beta, I decided to hold off on using this model because currently:
 	// 1.) We cannot tell exactly which direction it is pointing
-	// 2.) It's off-center, and therefore making rotation look weird.
+	// 2.) It is off-center, and therefore making rotation look jagged.
     // loadModel(self);
     
     draw(self);
@@ -38,7 +38,6 @@ Spaceship.constructor = Spaceship;
 Spaceship.prototype.move = function() {
 
     if (this.isAccelerating) {
-        console.log("vx / vy : " + this.vx + ", " + this.vy);
 
         // Cap the max speed
 		if (Math.abs(this.vx) < MAX_SPEED) {
@@ -56,14 +55,17 @@ Spaceship.prototype.move = function() {
     
     this.y += this.vy;
     this.x += this.vx;
-    
+
+    // Check if surpasses frame    
     var WIDTH = window.innerWidth / 2;
     var HEIGHT = window.innerHeight / 2;
-    console.log("W WIDTH: " + WIDTH);
-    console.log("W HEIGHT: " + HEIGHT);
+    
+    /*
+    console.log("W: " + WIDTH);
+    console.log("H: " + HEIGHT);
     console.log("(x, y): " + this.x + ", " + this.y);
-
-
+    */
+    
 	if (this.x > WIDTH) {
     	this.x = -WIDTH;
 	} else if (this.x < -WIDTH) {
@@ -76,7 +78,6 @@ Spaceship.prototype.move = function() {
         this.y = HEIGHT;
     }
     
-    // allowed to draw itself in the scene from here?
     this.position.x = this.x;
     this.position.z = this.y;
 }
@@ -91,6 +92,7 @@ Spaceship.prototype.rotateRight = function() {
     this.angularPosition += this.rotationSpeed;
 }
 
+// For now, just draw a triangle like the original arcade version.
 function draw(self) {
 	
 	var side = 10;
@@ -109,6 +111,7 @@ function draw(self) {
 	self.add(mesh);
 }
 
+// "UFO" model with steel texture
 function loadModel(self) {
     
     var textureLoader = new THREE.TextureLoader();

@@ -2,3 +2,13 @@ body {
     margin: 0px;
     overflow: hidden;
 }
+
+#help-text {
+    background-color: #444444;
+    width: 100%;
+	text-align: center;
+}
+
+#help-text span {
+	color: #fff;
+}

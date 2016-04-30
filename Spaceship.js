@@ -26,6 +26,8 @@ var Spaceship = function() {
     self.angularPosition = 0.0;
     self.speed = 0.10;
     
+    addLight(self);
+    
     // For Beta, I decided to hold off on using this model because currently:
 	// 1.) We cannot tell exactly which direction it is pointing
 	// 2.) It is off-center, and therefore making rotation look jagged.
@@ -101,6 +103,10 @@ function drawArcadeTriangle(self) {
 	
 	var mesh = new THREE.Mesh(geo, material); 
 	self.add(mesh);
+}
+
+function addLight(self) {
+    self.add(new THREE.PointLight(0xffff0f));
 }
 
 // "UFO" model with steel texture

@@ -79,7 +79,7 @@ Spaceship.prototype.rotateRight = function() {
 function draw(self) {
 	
 	var radius = 30;
-	var material = new THREE.MeshBasicMaterial({ color:0xFFFFFF }); 
+	var material = new THREE.MeshLambertMaterial({ color:0xFFFFFF }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);
     self.add(new THREE.Mesh(geometry, material));
 }

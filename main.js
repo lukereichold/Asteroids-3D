@@ -29,6 +29,7 @@ setup();
 addLights();
 addShip()
 addAsteroids(8);
+addSun();
 
 render();
 
@@ -40,8 +41,8 @@ function setup() {
     
     // Camera
     camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, WORLD_SIZE);
-//     camera.position.set(0, 400, 0); // camera from above
-//     camera.lookAt(new THREE.Vector3(0,0,0));
+    // camera.position.set(0, 400, 0); // camera from above
+    // camera.lookAt(new THREE.Vector3(0,0,0));
     
     if (DEBUG) {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -51,6 +52,16 @@ function setup() {
     
     addSkybox();
     addStats();
+}
+
+// Sun orb at origin will help ship know where center of map is.
+function addSun() {
+    var radius = 30;
+	var material = new THREE.MeshBasicMaterial({ color:0xFFFF00 }); 
+    var geometry = new THREE.SphereGeometry(radius, 18, 18);
+    var sun = new THREE.Mesh(geometry, material);
+    sun.add(new THREE.PointLight(0xffff0f));
+    scene.add(sun);
 }
 
 function addShip() {
@@ -151,18 +162,14 @@ function wrapAround(obj) {
     // If necessary, move obj to other side of map if we hit the map bounds.
     if (obj.x > WORLD_SIZE / 2) {
     	obj.x = -WORLD_SIZE / 2;
-    	console.log("Wrapping around! x max")
 	} else if (obj.x < -WORLD_SIZE / 2) {
     	obj.x = WORLD_SIZE / 2;
-    	console.log("Wrapping around! x min")
 	}
 
     if (obj.y > WORLD_SIZE / 2) {
         obj.y = -WORLD_SIZE / 2;
-        console.log("Wrapping around! y max")
     } else if (obj.y < -WORLD_SIZE / 2) {
         obj.y = WORLD_SIZE / 2;
-        console.log("Wrapping around! y min")
     }
 } 
 

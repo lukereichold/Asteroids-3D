@@ -20,7 +20,7 @@ var Asteroid = function() {
     self.vx = getRandom(-3, 3);
     self.vy = getRandom(-3, 3);
     
-    var material = new THREE.MeshBasicMaterial({ color:0x964B00 }); 
+    var material = new THREE.MeshLambertMaterial({ color:0x964B00 }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);
     this.add(new THREE.Mesh(geometry, material));
     

@@ -25,7 +25,7 @@ var Asteroid = function() {
     this.add(new THREE.Mesh(geometry, material));
     
     self.position.x = self.x;
-    self.position.y = radius;
+    self.position.y = 0;
     self.position.z = self.y;
 }
 

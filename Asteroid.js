@@ -17,8 +17,8 @@ var Asteroid = function() {
     self.y = getRandomInt(-HEIGHT + PADDING, HEIGHT - PADDING);
         
     // Default component speeds are random between -5 to 5
-    self.vx = getRandom(-5, 5);
-    self.vy = getRandom(-5, 5);
+    self.vx = getRandom(-3, 3);
+    self.vy = getRandom(-3, 3);
     
     var material = new THREE.MeshBasicMaterial({ color:0x964B00 }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);

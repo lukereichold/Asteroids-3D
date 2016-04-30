@@ -1,7 +1,7 @@
 // Spaceship.js
 // Luke Reichold - CSCI 3820
 
-var MAX_SPEED = 15;
+var MAX_SPEED = 5;
 
 // Subclassing Object3D to represent main spaceship player object.
 var Spaceship = function() {
@@ -17,11 +17,14 @@ var Spaceship = function() {
     self.vx = 0.0;
     self.vy = 0.0;
     
+    // Initial angle so the object and its camera point in same direction.
+    self.rotateY(-Math.PI / 2);
+    
     self.isAccelerating = false;
     self.friction = 0.95;
     self.rotationSpeed = 0.04;
     self.angularPosition = 0.0;
-    self.speed = 0.25;
+    self.speed = 0.10;
     
     // For Beta, I decided to hold off on using this model because currently:
 	// 1.) We cannot tell exactly which direction it is pointing
@@ -60,22 +63,23 @@ Spaceship.prototype.move = function() {
     var WIDTH = window.innerWidth / 2;
     var HEIGHT = window.innerHeight / 2;
     
-    /*
-    console.log("W: " + WIDTH);
-    console.log("H: " + HEIGHT);
-    console.log("(x, y): " + this.x + ", " + this.y);
-    */
     
-	if (this.x > WIDTH) {
-    	this.x = -WIDTH;
-	} else if (this.x < -WIDTH) {
-    	this.x = WIDTH;
+    WORLD_SIZE = 3000;
+    
+	if (this.x > WORLD_SIZE / 2) {
+    	this.x = -WORLD_SIZE / 2;
+    	console.log("Wrapping around! x max")
+	} else if (this.x < -WORLD_SIZE / 2) {
+    	this.x = WORLD_SIZE / 2;
+    	console.log("Wrapping around! x min")
 	}
 
-    if (this.y > HEIGHT) {
-        this.y = -HEIGHT;
-    } else if (this.y < -HEIGHT) {
-        this.y = HEIGHT;
+    if (this.y > WORLD_SIZE / 2) {
+        this.y = -WORLD_SIZE / 2;
+        console.log("Wrapping around! y max")
+    } else if (this.y < -WORLD_SIZE / 2) {
+        this.y = WORLD_SIZE / 2;
+        console.log("Wrapping around! y min")
     }
     
     this.position.x = this.x;
@@ -92,8 +96,18 @@ Spaceship.prototype.rotateRight = function() {
     this.angularPosition += this.rotationSpeed;
 }
 
-// For now, just draw a triangle like the original arcade version.
+// Since camera is ON the ship, just make the ship a sphere geometry, since we don't see it.
+// Helps out with collision detection anyway.
 function draw(self) {
+	
+	var radius = 30;
+	var material = new THREE.MeshBasicMaterial({ color:0xFFFFFF }); 
+    var geometry = new THREE.SphereGeometry(radius, 18, 18);
+    self.add(new THREE.Mesh(geometry, material));
+}
+
+// Draw a triangle like the original arcade version.
+function drawArcadeTriangle(self) {
 	
 	var side = 10;
 	var geo = new THREE.Geometry(); 

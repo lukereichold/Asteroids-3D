@@ -2,15 +2,23 @@
 // Luke Reichold - CSCI 3820 
 // Final Project: Asteroids
 
+// Populate array of skybox background images for later use.
+const SKYBOX_PATH = './cubemap/space/';
+var background_urls = [
+        SKYBOX_PATH + 'space-tile.png', SKYBOX_PATH + 'space-tile.png',
+        SKYBOX_PATH + 'space-tile.png', SKYBOX_PATH + 'space-tile.png',
+        SKYBOX_PATH + 'space-tile.png', SKYBOX_PATH + 'space-tile.png'
+    ];
+
+var WORLD_SIZE = 3000;
 var scene = new THREE.Scene();
-var DEBUG = false;
+var DEBUG = true;
 var stats, camera, renderer, controls;
 
 // Objects
 var ship;
 var asteroids = [];
 var blasts = [];
-var blastMeshes = [];
 
 var speed = 0.2;
 var WIDTH = window.innerWidth;
@@ -18,7 +26,6 @@ var HEIGHT = window.innerHeight;
 
 setup();
 
-addBackground();
 addLights();
 addShip()
 addAsteroids(8);
@@ -32,21 +39,24 @@ function setup() {
     document.body.appendChild(renderer.domElement);
     
     // Camera
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 400, 0); // camera from above
-    camera.lookAt(new THREE.Vector3(0,0,0));
+    camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, WORLD_SIZE);
+//     camera.position.set(0, 400, 0); // camera from above
+//     camera.lookAt(new THREE.Vector3(0,0,0));
     
     if (DEBUG) {
         controls = new THREE.OrbitControls(camera, renderer.domElement);
-        var axisHelper = new THREE.AxisHelper( 500 );
+        var axisHelper = new THREE.AxisHelper( WORLD_SIZE );
         scene.add( axisHelper );
     }
     
+    addSkybox();
     addStats();
 }
 
 function addShip() {
     ship = new Spaceship();
+    camera.lookAt(new THREE.Vector3(10,0,0));
+    ship.add(camera);
     scene.add(ship);
 }
 
@@ -57,6 +67,30 @@ function addAsteroids(number) {
         asteroids.push(body);
         scene.add(body);
     }
+}
+
+function addSkybox() {
+	   
+	var loader = new THREE.CubeTextureLoader();
+    var texture = loader.load( background_urls );
+    texture.format = THREE.RGBFormat;
+
+    var shader = THREE.ShaderLib[ "cube" ];
+    shader.uniforms[ "tCube" ].value = texture;
+    
+    var material = new THREE.ShaderMaterial( {
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        depthWrite: false,
+        side: THREE.BackSide
+    } );
+
+    var geometry = new THREE.BoxGeometry( WORLD_SIZE, WORLD_SIZE, WORLD_SIZE );
+
+    skybox = new THREE.Mesh( geometry, material );
+    skybox.position.y = -30;
+    scene.add( skybox );
 }
 
 function addStats() {
@@ -95,33 +129,49 @@ function render() {
     stats.update();
 };
 
-function addBackground() {
-    
-    var textureLoader = new THREE.TextureLoader();
-    var texture = textureLoader.load('textures/space-tile.png');
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set( 6, 6 );
-    var floor = new THREE.Mesh(new THREE.PlaneBufferGeometry(1500, 1500), 
-                               new THREE.MeshBasicMaterial({ map: texture }));
-
-    floor.rotation.x = -Math.PI/2;
-    scene.add(floor);
-}
-
 function addLights() {    
     scene.add(new THREE.AmbientLight(0x555555));
 }
 
+/*
 function fireBlaster() {
+	
     console.log("Firing blaster!");
-    var shootDirection = new THREE.Vector3();   
-    // Coming soon!
+	obj = ship;
+	
+	var sphereMaterial = new t.MeshBasicMaterial({color: 0x333333});
+	var sphereGeo = new t.SphereGeometry(2, 6, 6);
+	var sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
+	
+	sphere.position.set(obj.position.x, obj.position.y * 0.8, obj.position.z);
+
+	if (obj instanceof t.Camera) {
+		var vector = new t.Vector3(mouse.x, mouse.y, 1);
+		projector.unprojectVector(vector, obj);
+		sphere.ray = new t.Ray(
+				obj.position,
+				vector.subSelf(obj.position).normalize()
+		);
+	}
+	else {
+		var vector = cam.position.clone();
+		sphere.ray = new t.Ray(
+				obj.position,
+				vector.subSelf(obj.position).normalize()
+		);
+	}
+	sphere.owner = obj;
+	
+	blasts.push(sphere);
+	scene.add(sphere);
+	
+	return sphere; // not necessary
 }
+*/
 
 // Keyboard controls for player motion. 
 kd.SPACE.down(function () {
-    fireBlaster();
+    // fireBlaster();
 });
 
 kd.W.down(function () {

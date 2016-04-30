@@ -59,29 +59,7 @@ Spaceship.prototype.move = function() {
     this.y += this.vy;
     this.x += this.vx;
 
-    // Check if surpasses frame    
-    var WIDTH = window.innerWidth / 2;
-    var HEIGHT = window.innerHeight / 2;
-    
-    
-    WORLD_SIZE = 3000;
-    
-	if (this.x > WORLD_SIZE / 2) {
-    	this.x = -WORLD_SIZE / 2;
-    	console.log("Wrapping around! x max")
-	} else if (this.x < -WORLD_SIZE / 2) {
-    	this.x = WORLD_SIZE / 2;
-    	console.log("Wrapping around! x min")
-	}
 
-    if (this.y > WORLD_SIZE / 2) {
-        this.y = -WORLD_SIZE / 2;
-        console.log("Wrapping around! y max")
-    } else if (this.y < -WORLD_SIZE / 2) {
-        this.y = WORLD_SIZE / 2;
-        console.log("Wrapping around! y min")
-    }
-    
     this.position.x = this.x;
     this.position.z = this.y;
 }

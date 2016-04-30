@@ -122,6 +122,8 @@ function render() {
         asteroids[i].move();
     }
     
+    handleMapEdges();
+    
     if (DEBUG) {
         controls.update();        
     }
@@ -132,6 +134,37 @@ function render() {
 function addLights() {    
     scene.add(new THREE.AmbientLight(0x555555));
 }
+
+function handleMapEdges() {
+    
+    for (var i=0; i < asteroids.length; i++) {
+        wrapAround(asteroids[i]);
+    }
+    
+    wrapAround(ship);
+    
+    // TODO: eventually also move the blasts here as well.
+}
+
+function wrapAround(obj) {
+    
+    // If necessary, move obj to other side of map if we hit the map bounds.
+    if (obj.x > WORLD_SIZE / 2) {
+    	obj.x = -WORLD_SIZE / 2;
+    	console.log("Wrapping around! x max")
+	} else if (obj.x < -WORLD_SIZE / 2) {
+    	obj.x = WORLD_SIZE / 2;
+    	console.log("Wrapping around! x min")
+	}
+
+    if (obj.y > WORLD_SIZE / 2) {
+        obj.y = -WORLD_SIZE / 2;
+        console.log("Wrapping around! y max")
+    } else if (obj.y < -WORLD_SIZE / 2) {
+        obj.y = WORLD_SIZE / 2;
+        console.log("Wrapping around! y min")
+    }
+} 
 
 /*
 function fireBlaster() {

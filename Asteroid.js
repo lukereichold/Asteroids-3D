@@ -36,19 +36,6 @@ Asteroid.prototype.move = function() {
 
     this.y += this.vy;
     this.x += this.vx;
-
-    // Check if surpasses frame
-	if (this.x > WIDTH) {
-    	this.x = -WIDTH;
-	} else if (this.x < -WIDTH) {
-    	this.x = WIDTH;
-	}
-
-    if (this.y > HEIGHT) {
-        this.y = -HEIGHT;
-    } else if (this.y < -HEIGHT) {
-        this.y = HEIGHT;
-    }
     
     this.position.x = this.x;
     this.position.z = this.y;

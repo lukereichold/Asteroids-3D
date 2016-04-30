@@ -13,7 +13,7 @@ var background_urls = [
 var WORLD_SIZE = 3000;
 var scene = new THREE.Scene();
 var DEBUG = true;
-var stats, camera, renderer, controls;
+var stats, camera, renderer, controls, projector;
 
 // Objects
 var ship;
@@ -50,6 +50,8 @@ function setup() {
         scene.add( axisHelper );
     }
     
+    projector = new THREE.Projector();
+
     addSkybox();
     addStats();
 }
@@ -57,7 +59,7 @@ function setup() {
 // Sun orb at origin will help ship know where center of map is.
 function addSun() {
     var radius = 30;
-	var material = new THREE.MeshBasicMaterial({ color:0xFFFF00 }); 
+	var material = new THREE.MeshLambertMaterial({ color:0xFFFF00 }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);
     var sun = new THREE.Mesh(geometry, material);
     sun.add(new THREE.PointLight(0xffff0f));
@@ -66,9 +68,34 @@ function addSun() {
 
 function addShip() {
     ship = new Spaceship();
-    camera.lookAt(new THREE.Vector3(10,0,0));
+    camera.add(createCrosshairs());
     ship.add(camera);
     scene.add(ship);
+}
+
+function createCrosshairs() {
+    
+    var material = new THREE.LineBasicMaterial({ color: 0xFF0000 });
+    var geometry = new THREE.Geometry();   
+    var size = 0.01; 
+    geometry.vertices.push(new THREE.Vector3(0, size, 0));
+    geometry.vertices.push(new THREE.Vector3(0, -size, 0));
+    geometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    geometry.vertices.push(new THREE.Vector3(size, 0, 0));    
+    geometry.vertices.push(new THREE.Vector3(-size, 0, 0));
+    
+    var crosshair = new THREE.Line( geometry, material );
+    
+    // place it in the center
+    var middlePercent = 50;
+    var crosshairPosX = (middlePercent / 100) * 2 - 1;
+    var crosshairPosY = (middlePercent / 100) * 2 - 1;
+    
+    crosshair.position.x = crosshairPosX * camera.aspect;
+    crosshair.position.y = crosshairPosY;
+    crosshair.position.z = -0.3;
+    
+    return crosshair;
 }
 
 // Add given number of asteroids to the scene
@@ -119,8 +146,7 @@ function render() {
     
     // Update bullet ("blast") positions
     for (var i=0; i < blasts.length; i++){
-        blastMeshes[i].position.copy(blasts[i].position);
-        blastMeshes[i].quaternion.copy(blasts[i].quaternion);
+        // TODO: coming soon
     }
     
     // Keydown listener
@@ -153,7 +179,6 @@ function handleMapEdges() {
     }
     
     wrapAround(ship);
-    
     // TODO: eventually also move the blasts here as well.
 }
 
@@ -173,45 +198,39 @@ function wrapAround(obj) {
     }
 } 
 
-/*
+
 function fireBlaster() {
 	
     console.log("Firing blaster!");
 	obj = ship;
 	
-	var sphereMaterial = new t.MeshBasicMaterial({color: 0x333333});
-	var sphereGeo = new t.SphereGeometry(2, 6, 6);
+	var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE});
+	var sphereGeo = new THREE.SphereGeometry(5, 6, 6);
 	var sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
 	
-	sphere.position.set(obj.position.x, obj.position.y * 0.8, obj.position.z);
+	// bullet starting position at ship
+	sphere.position.set(obj.position.x, obj.position.y, obj.position.z);
+	sphere.rotation.set(obj.rotation.x, obj.rotation.y, obj.rotation.z);
 
-	if (obj instanceof t.Camera) {
-		var vector = new t.Vector3(mouse.x, mouse.y, 1);
-		projector.unprojectVector(vector, obj);
-		sphere.ray = new t.Ray(
+    
+    // center of screen
+	var vector = new THREE.Vector3(WIDTH / 2, HEIGHT / 2, 1);
+    projector.unprojectVector(vector, obj);
+    sphere.ray = new THREE.Ray(
 				obj.position,
 				vector.subSelf(obj.position).normalize()
-		);
-	}
-	else {
-		var vector = cam.position.clone();
-		sphere.ray = new t.Ray(
-				obj.position,
-				vector.subSelf(obj.position).normalize()
-		);
-	}
+    );
+		
 	sphere.owner = obj;
 	
 	blasts.push(sphere);
 	scene.add(sphere);
-	
-	return sphere; // not necessary
 }
-*/
+
 
 // Keyboard controls for player motion. 
 kd.SPACE.down(function () {
-    // fireBlaster();
+    fireBlaster();
 });
 
 kd.W.down(function () {

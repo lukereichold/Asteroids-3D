@@ -1,7 +1,7 @@
 // Spaceship.js
 // Luke Reichold - CSCI 3820
 
-var MAX_SPEED = 5;
+var MAX_SPEED = 8;
 
 // Subclassing Object3D to represent main spaceship player object.
 var Spaceship = function() {
@@ -28,7 +28,7 @@ var Spaceship = function() {
     
     addLight(self);
     
-    // For Beta, I decided to hold off on using this model because currently:
+    // For now, I decided to hold off on using this model because currently:
 	// 1.) We cannot tell exactly which direction it is pointing
 	// 2.) It is off-center, and therefore making rotation look jagged.
     // loadModel(self);

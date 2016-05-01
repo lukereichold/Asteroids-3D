@@ -1,7 +1,7 @@
 // Spaceship.js
 // Luke Reichold - CSCI 3820
 
-var MAX_SPEED = 8;
+var MAX_SPEED = 10;
 
 // Subclassing Object3D to represent main spaceship player object.
 var Spaceship = function() {
@@ -16,6 +16,8 @@ var Spaceship = function() {
     
     self.vx = 0.0;
     self.vy = 0.0;
+    
+    self.radius = 30;
     
     // Initial angle so the object and its camera point in same direction.
     self.rotateY(-Math.PI / 2);
@@ -80,9 +82,8 @@ Spaceship.prototype.rotateRight = function() {
 // Helps out with collision detection anyway.
 function draw(self) {
 	
-	var radius = 30;
 	var material = new THREE.MeshLambertMaterial({ color:0xFFFFFF }); 
-    var geometry = new THREE.SphereGeometry(radius, 18, 18);
+    var geometry = new THREE.SphereGeometry(self.radius, 18, 18);
     self.add(new THREE.Mesh(geometry, material));
 }
 

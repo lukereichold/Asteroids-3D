@@ -13,14 +13,15 @@ var background_urls = [
 var WORLD_SIZE = 3000;
 var scene = new THREE.Scene();
 var DEBUG = true;
-var stats, camera, renderer, controls, projector;
+var stats, camera, renderer, controls;
+
+var BULLET_SPEED = 10, BULLET_SIZE = 15;
 
 // Objects
 var ship;
 var asteroids = [];
 var blasts = [];
 
-var speed = 0.2;
 var WIDTH = window.innerWidth;
 var HEIGHT = window.innerHeight;
 
@@ -40,7 +41,8 @@ function setup() {
     document.body.appendChild(renderer.domElement);
     
     // Camera
-    camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, WORLD_SIZE);
+    var far = WORLD_SIZE * Math.sqrt(2); // diagonal of cube is max possible
+    camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, far);
     // camera.position.set(0, 400, 0); // camera from above
     // camera.lookAt(new THREE.Vector3(0,0,0));
     
@@ -50,8 +52,6 @@ function setup() {
         scene.add( axisHelper );
     }
     
-    projector = new THREE.Projector();
-
     addSkybox();
     addStats();
 }
@@ -84,13 +84,13 @@ function createCrosshairs() {
     geometry.vertices.push(new THREE.Vector3(size, 0, 0));    
     geometry.vertices.push(new THREE.Vector3(-size, 0, 0));
     
-    var crosshair = new THREE.Line( geometry, material );
-    
-    // place it in the center
+    var crosshair = new THREE.Line(geometry, material);
+
     var middlePercent = 50;
     var crosshairPosX = (middlePercent / 100) * 2 - 1;
     var crosshairPosY = (middlePercent / 100) * 2 - 1;
     
+    // place in center of screen
     crosshair.position.x = crosshairPosX * camera.aspect;
     crosshair.position.y = crosshairPosY;
     crosshair.position.z = -0.3;
@@ -146,7 +146,17 @@ function render() {
     
     // Update bullet ("blast") positions
     for (var i=0; i < blasts.length; i++){
-        // TODO: coming soon
+        blasts[i].translateZ(-BULLET_SPEED);
+        blasts[i]._life += 1;
+                
+        // Check for collisions
+        
+        // Let each blast travel the map 1.5 times before disappearing.
+        if (blasts[i]._life > (WORLD_SIZE / BULLET_SPEED) * 1.5) {
+            scene.remove(blasts[i]);
+            blasts.splice(i, 1);
+            console.log("REMOVING BLAST!");
+        }
     }
     
     // Keydown listener
@@ -154,7 +164,7 @@ function render() {
     
     ship.move()
     
-    // Move all asteroids
+    // Move all asteroids, check collisions, then remove if necessary
     for (var i=0; i < asteroids.length; i++) {
         asteroids[i].move();
     }
@@ -179,7 +189,10 @@ function handleMapEdges() {
     }
     
     wrapAround(ship);
-    // TODO: eventually also move the blasts here as well.
+    
+    for (var i=0; i < blasts.length; i++) {
+        wrapAround(blasts[i].position);
+    }
 }
 
 function wrapAround(obj) {
@@ -199,30 +212,22 @@ function wrapAround(obj) {
 } 
 
 
+// TODO: Limit the number of times per second this can be called.
 function fireBlaster() {
 	
     console.log("Firing blaster!");
 	obj = ship;
 	
 	var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE});
-	var sphereGeo = new THREE.SphereGeometry(5, 6, 6);
+	var sphereGeo = new THREE.SphereGeometry(BULLET_SIZE, 6, 6);
 	var sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
 	
 	// bullet starting position at ship
-	sphere.position.set(obj.position.x, obj.position.y, obj.position.z);
-	sphere.rotation.set(obj.rotation.x, obj.rotation.y, obj.rotation.z);
-
+	sphere.position.copy(obj.position);
+	sphere.rotation.copy(obj.rotation);
+    sphere.translateZ(-ship.radius);
+    sphere._life = 1;
     
-    // center of screen
-	var vector = new THREE.Vector3(WIDTH / 2, HEIGHT / 2, 1);
-    projector.unprojectVector(vector, obj);
-    sphere.ray = new THREE.Ray(
-				obj.position,
-				vector.subSelf(obj.position).normalize()
-    );
-		
-	sphere.owner = obj;
-	
 	blasts.push(sphere);
 	scene.add(sphere);
 }

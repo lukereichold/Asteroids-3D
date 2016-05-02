@@ -84,7 +84,8 @@ function draw(self) {
 	
 	var material = new THREE.MeshLambertMaterial({ color:0xFFFFFF }); 
     var geometry = new THREE.SphereGeometry(self.radius, 18, 18);
-    self.add(new THREE.Mesh(geometry, material));
+    self.mesh = new THREE.Mesh(geometry, material);
+    self.add(self.mesh);
 }
 
 // Draw a triangle like the original arcade version.

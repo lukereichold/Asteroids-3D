@@ -11,19 +11,21 @@ var background_urls = [
     ];
 
 var WORLD_SIZE = 3000;
-var scene = new THREE.Scene();
 var DEBUG = true;
-var stats, camera, renderer, controls;
+var WIDTH = window.innerWidth;
+var HEIGHT = window.innerHeight;
 
-var BULLET_SPEED = 10, BULLET_SIZE = 15;
+var scene = new THREE.Scene();
+var raycaster = new THREE.Raycaster();
+
+var stats, camera, renderer, controls, sun;
+
+var BULLET_SPEED = 15, BULLET_RADIUS = 15;
 
 // Objects
 var ship;
 var asteroids = [];
 var blasts = [];
-
-var WIDTH = window.innerWidth;
-var HEIGHT = window.innerHeight;
 
 setup();
 
@@ -31,6 +33,9 @@ addLights();
 addShip()
 addAsteroids(8);
 addSun();
+
+// temporary:
+window.addEventListener('keydown', keydown);
 
 render();
 
@@ -61,7 +66,7 @@ function addSun() {
     var radius = 30;
 	var material = new THREE.MeshLambertMaterial({ color:0xFFFF00 }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);
-    var sun = new THREE.Mesh(geometry, material);
+    sun = new THREE.Mesh(geometry, material);
     sun.add(new THREE.PointLight(0xffff0f));
     scene.add(sun);
 }
@@ -75,7 +80,7 @@ function addShip() {
 
 function createCrosshairs() {
     
-    var material = new THREE.LineBasicMaterial({ color: 0xFF0000 });
+    var material = new THREE.LineBasicMaterial({ color: 0x00FF00, linewidth: 3 });
     var geometry = new THREE.Geometry();   
     var size = 0.01; 
     geometry.vertices.push(new THREE.Vector3(0, size, 0));
@@ -94,7 +99,6 @@ function createCrosshairs() {
     crosshair.position.x = crosshairPosX * camera.aspect;
     crosshair.position.y = crosshairPosY;
     crosshair.position.z = -0.3;
-    
     return crosshair;
 }
 
@@ -148,16 +152,17 @@ function render() {
     for (var i=0; i < blasts.length; i++){
         blasts[i].translateZ(-BULLET_SPEED);
         blasts[i]._life += 1;
-                
-        // Check for collisions
         
         // Let each blast travel the map 1.5 times before disappearing.
         if (blasts[i]._life > (WORLD_SIZE / BULLET_SPEED) * 1.5) {
             scene.remove(blasts[i]);
             blasts.splice(i, 1);
-            console.log("REMOVING BLAST!");
         }
     }
+
+    checkForBulletCollisions();
+
+    checkForShipCollisions();
     
     // Keydown listener
     kd.tick();
@@ -168,6 +173,24 @@ function render() {
     for (var i=0; i < asteroids.length; i++) {
         asteroids[i].move();
     }
+    
+
+    
+/*
+    // Check for any asteroid collisions with Ship
+    for (var vertexIndex = 0; vertexIndex < ship.mesh.geometry.vertices.length; vertexIndex++) {
+        var localVertex = ship.mesh.geometry.vertices[vertexIndex].clone();
+        var globalVertex = ship.mesh.matrix.multiplyVector3(localVertex);
+        var directionVector = globalVertex.subSelf( ship.position );
+    
+        var ray = new THREE.Ray( ship.position, directionVector.clone().normalize() );
+        var collisionResults = ray.intersectObjects( asteroids );
+        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) {
+            console.log("SHIP WAS HIT BY ASTEROID!");
+        }
+    }
+        
+*/
     
     handleMapEdges();
     
@@ -195,6 +218,73 @@ function handleMapEdges() {
     }
 }
 
+function checkForBulletCollisions() {
+    
+    for (var i=0; i < blasts.length; i++) {
+        
+        var blast = blasts[i];
+        
+        for (var j=0; j < asteroids.length; j++) {
+            
+            var asteroid = asteroids[j];
+            
+            if (blastHitsAsteroid(blast, asteroid)) {
+                
+                console.log("Blast hit an asteroid!");
+                
+                // Remove this asteroid.
+                scene.remove(asteroids[j]);
+                asteroids.splice(j, 1);
+                
+                // Remove this bullet.
+                scene.remove(blasts[i]);
+                blasts.splice(i, 1);
+            }
+        }
+    }
+}
+
+function checkForShipCollisions() {
+    
+    for (var i=0; i < asteroids.length; i++) {
+        
+        var asteroid = asteroids[i];
+        
+        if (asteroidHitsShip(asteroid, ship)) {
+                
+            console.log("Asteroid hit the ship!");
+            
+            // Remove this asteroid once it hits the ship.
+            scene.remove(asteroid);
+            asteroids.splice(i, 1);
+            
+            // TODO: Decrement a life
+        }
+    }
+}
+
+function asteroidHitsShip(asteroid, ship) {
+    dist = distance2d(asteroid.position, ship.position);
+    if (dist <= ship.radius + asteroid.radius) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function blastHitsAsteroid(blast, asteroid) {
+    dist = distance2d(blast.position, asteroid.position);
+    if (dist <= BULLET_RADIUS + asteroid.radius) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function distance2d(pos1, pos2) {
+    return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.z - pos2.z, 2));
+}
+
 function wrapAround(obj) {
     
     // If necessary, move obj to other side of map if we hit the map bounds.
@@ -219,13 +309,14 @@ function fireBlaster() {
 	obj = ship;
 	
 	var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE});
-	var sphereGeo = new THREE.SphereGeometry(BULLET_SIZE, 6, 6);
+	var sphereGeo = new THREE.SphereGeometry(BULLET_RADIUS, 6, 6);
 	var sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
 	
 	// bullet starting position at ship
 	sphere.position.copy(obj.position);
 	sphere.rotation.copy(obj.rotation);
     sphere.translateZ(-ship.radius);
+    sphere._direction = camera.getWorldDirection();
     sphere._life = 1;
     
 	blasts.push(sphere);
@@ -234,9 +325,11 @@ function fireBlaster() {
 
 
 // Keyboard controls for player motion. 
+/*
 kd.SPACE.down(function () {
     fireBlaster();
 });
+*/
 
 kd.W.down(function () {
     ship.isAccelerating = true;
@@ -262,5 +355,14 @@ function smoothSurface(m) {
         m.geometry = new THREE.BufferGeometry().fromGeometry(geometry);
     } else {
         m.geometry.computeVertexNormals();
+    }
+}
+
+function keydown(event) {
+	
+    switch (event.keyCode) {
+        case 32: // spacebar
+            fireBlaster();
+            break;
     }
 }

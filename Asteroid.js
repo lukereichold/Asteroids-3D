@@ -10,7 +10,7 @@ var Asteroid = function() {
     var WIDTH = window.innerWidth / 2;
     var HEIGHT = window.innerHeight / 2;
     
-    var radius = getRandomInt(2, 25);
+    self.radius = getRandomInt(2, 25);
     
     // Default starting position
     self.x = getRandomInt(-WIDTH + PADDING, WIDTH - PADDING);
@@ -21,7 +21,7 @@ var Asteroid = function() {
     self.vy = getRandom(-3, 3);
     
     var material = new THREE.MeshLambertMaterial({ color:0x964B00 }); 
-    var geometry = new THREE.SphereGeometry(radius, 18, 18);
+    var geometry = new THREE.SphereGeometry(self.radius, 18, 18);
     this.add(new THREE.Mesh(geometry, material));
     
     self.position.x = self.x;

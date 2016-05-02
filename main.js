@@ -258,9 +258,21 @@ function checkForShipCollisions() {
             scene.remove(asteroid);
             asteroids.splice(i, 1);
             
-            // TODO: Decrement a life
+            ship.lives -= 1;
+            if (ship.lives == 0) {
+                window.alert("No lives remaining. Game over!");
+                
+                restartGame();
+            }
         }
     }
+}
+
+function restartGame() {
+    ship.lives = 3;
+    blasts.splice(0, blasts.length);
+    asteroids.splice(0, asteroids.length);
+    addAsteroids(8);
 }
 
 function asteroidHitsShip(asteroid, ship) {

@@ -17,6 +17,9 @@ var Spaceship = function() {
     self.vx = 0.0;
     self.vy = 0.0;
     
+    // Start with 3 lives by default
+    self.lives = 3;
+    
     self.radius = 30;
     
     // Initial angle so the object and its camera point in same direction.

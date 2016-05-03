@@ -24,8 +24,8 @@ var stats, camera, renderer, controls, listener, sun, effect;
 
 var BULLET_SPEED = 15, BULLET_RADIUS = 15;
 
-// Default starting number of asteroids
-var NUM_ASTEROIDS = 8;
+var DEFAULT_ASTEROIDS = 15;
+var NUM_ASTEROIDS = DEFAULT_ASTEROIDS;
 
 // Objects
 var ship;
@@ -36,7 +36,7 @@ setup();
 
 addLights();
 addShip()
-addAsteroids(8);
+addAsteroids(NUM_ASTEROIDS);
 addSun();
 
 var clock = new THREE.Clock();
@@ -234,6 +234,12 @@ function onWindowResize() {
 	effect.setSize( WIDTH, HEIGHT );
 }
 
+function is_touch_device() {
+  return 'ontouchstart' in window        // works on most browsers 
+      || 'onmsgesturechange' in window;  // works on IE10 with some false positives
+};
+
+
 function render() {
     
     var delta = clock.getDelta();
@@ -251,6 +257,13 @@ function render() {
             blasts.splice(i, 1);
         }
     }
+
+
+    if (is_touch_device()) {
+        fireBlaster();
+    }
+
+
 
     checkForBulletCollisions();
 
@@ -353,6 +366,8 @@ function checkForShipCollisions() {
                                 
                 window.alert("No lives remaining. Game over!");
                 
+                // Go back to easy difficulty.
+                NUM_ASTEROIDS = DEFAULT_ASTEROIDS;
                 restartGame();
             }
         }

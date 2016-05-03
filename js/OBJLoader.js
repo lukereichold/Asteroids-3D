@@ -19,6 +19,7 @@ THREE.OBJLoader.prototype = {
 		var scope = this;
 
 		var loader = new THREE.XHRLoader( scope.manager );
+		
 		loader.setPath( this.path );
 		loader.load( url, function ( text ) {
 
@@ -215,9 +216,9 @@ THREE.OBJLoader.prototype = {
 		// f vertex//normal vertex//normal vertex//normal ...
 		var face_pattern4 = /^f\s+((-?\d+)\/\/(-?\d+))\s+((-?\d+)\/\/(-?\d+))\s+((-?\d+)\/\/(-?\d+))(?:\s+((-?\d+)\/\/(-?\d+)))?/;
 
-		var object_pattern = /^[og]\s*(.+)?/;
+		var object_pattern = /^[og]\s+(.+)/;
 
-		var smoothing_pattern = /^s\s+(\d+|on|off)/;
+		var smoothing_pattern = /^s\s+([01]|on|off)/;
 
 		//
 
@@ -306,7 +307,7 @@ THREE.OBJLoader.prototype = {
 				// or
 				// g group_name
 
-				var name = result[ 0 ].substr( 1 ).trim();
+				var name = result[ 1 ].trim();
 
 				if ( foundObjects === false ) {
 

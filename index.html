@@ -6,27 +6,32 @@
         <title>Asteroids</title>
         
         <link rel="stylesheet" type="text/css" href="css/main.css">
+
         <!-- Script Dependencies: -->
-        <script src="../js/three.min.js"></script>
-        <script src="../js/stats.min.js"></script>
+        <script src="./js/three.min.js"></script>
+        <script src="./js/jquery-1.12.3.min.js"></script>
+        <script src="./js/stats.min.js"></script>
+
+        <script src="./js/StereoEffect.js"></script>
+        <script src="./js/DeviceOrientationControls.js"></script>
+
+        <!-- Lightweight key handler for smoother motion -->
+        <script src="./js/keydrown.min.js"></script>
+        
+        <!-- Currently not using external 3D models
         <script src="../js/MTLLoader.js"></script>
         <script src="../js/OrbitControls.js"></script>
+        -->
         
-        <!-- Lightweight key handler for smoother motion -->
-        <script src="../js/keydrown.min.js"></script>
-        
-        <script src="./OBJLoader.js"></script>
-        <script src="./Spaceship.js"></script>
-        <script src="./Asteroid.js"></script>
+        <!-- Object controllers -->
+        <script src="./js/OBJLoader.js"></script>
+        <script src="./js/Spaceship.js"></script>
+        <script src="./js/Asteroid.js"></script>
     </head>
     
     <body>
         
-        <div id="help-text">
-            <span>A / D = Turn, W = Move, SPACE = Shoot</span>
-        </div>
-        
-        <script src="main.js"></script>
+        <script src="./js/main.js"></script>
 
     </body>
 </html>

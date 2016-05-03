@@ -3,11 +3,13 @@
 // Final Project: Asteroids
 
 // Populate array of skybox background images for later use.
-const SKYBOX_PATH = './cubemap/space/';
+const SKYBOX_PATH = './cubemap/galaxy/';
+const format = '.png';
+
 var background_urls = [
-        SKYBOX_PATH + 'space-tile.png', SKYBOX_PATH + 'space-tile.png',
-        SKYBOX_PATH + 'space-tile.png', SKYBOX_PATH + 'space-tile.png',
-        SKYBOX_PATH + 'space-tile.png', SKYBOX_PATH + 'space-tile.png'
+        SKYBOX_PATH + 'px' + format, SKYBOX_PATH + 'nx' + format,
+        SKYBOX_PATH + 'py' + format, SKYBOX_PATH + 'ny' + format,
+        SKYBOX_PATH + 'pz' + format, SKYBOX_PATH + 'nz' + format
     ];
 
 var WORLD_SIZE = 3000;
@@ -18,9 +20,12 @@ var HEIGHT = window.innerHeight;
 var scene = new THREE.Scene();
 var raycaster = new THREE.Raycaster();
 
-var stats, camera, renderer, controls, sun;
+var stats, camera, renderer, controls, listener, sun, effect;
 
 var BULLET_SPEED = 15, BULLET_RADIUS = 15;
+
+// Default starting number of asteroids
+var NUM_ASTEROIDS = 8;
 
 // Objects
 var ship;
@@ -33,6 +38,9 @@ addLights();
 addShip()
 addAsteroids(8);
 addSun();
+
+var clock = new THREE.Clock();
+
 
 // temporary:
 window.addEventListener('keydown', keydown);
@@ -48,17 +56,76 @@ function setup() {
     // Camera
     var far = WORLD_SIZE * Math.sqrt(2); // diagonal of cube is max possible
     camera = new THREE.PerspectiveCamera(75, WIDTH / HEIGHT, 0.1, far);
-    // camera.position.set(0, 400, 0); // camera from above
-    // camera.lookAt(new THREE.Vector3(0,0,0));
+
+    // Sound support
+    listener = new THREE.AudioListener();
+    camera.add(listener);
     
     if (DEBUG) {
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
         var axisHelper = new THREE.AxisHelper( WORLD_SIZE );
         scene.add( axisHelper );
     }
     
+    
+    // Our preferred controls via DeviceOrientation
+    function setOrientationControls(e) {
+    
+        if (!e.alpha) {
+            console.log("This isn't a phone!");
+            return;
+        }
+        
+        controls = new THREE.DeviceOrientationControls(camera, true);
+        controls.connect();
+        controls.update();
+
+        console.log("device orientation controls set!");
+        
+        fullscreen();
+
+        window.removeEventListener('deviceorientation', setOrientationControls, true);
+    }   
+    
     addSkybox();
-    addStats();
+
+    
+    if (!isMobileDevice()) {
+        addStats();
+    } else {
+        // By default, do full-screen mode on mobile.
+        fullscreen();
+    }
+    
+    effect = new THREE.StereoEffect(renderer);
+	effect.setSize(WIDTH, HEIGHT);
+    
+    window.addEventListener('deviceorientation', setOrientationControls, true);
+
+	window.addEventListener('resize', onWindowResize, false);
+}
+
+function fullscreen() {
+    console.log("Requesting fullscreen!");
+    
+    if (document.requestFullscreen) {
+        document.requestFullscreen();
+    } else if (document.msRequestFullscreen) {
+        document.msRequestFullscreen();
+    } else if (document.mozRequestFullScreen) {
+        document.mozRequestFullScreen();
+    } else if (document.webkitRequestFullscreen) {
+        document.webkitRequestFullscreen();
+    }
+    
+    window.scrollTo(0,1);
+}
+
+function isMobileDevice() {
+    if ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // Sun orb at origin will help ship know where center of map is.
@@ -145,7 +212,32 @@ function addStats() {
     container.appendChild( stats.domElement );
 }
 
+function addHelpText() {
+    container = document.createElement( 'div' );
+    help = document.createElement( 'span' );
+    help.innerHTML = "A / D = Turn, W = Move, SPACE = Shoot";
+    document.body.appendChild( container );
+    container.appendChild( help );
+}
+
+function onWindowResize() {
+
+    WIDTH = window.innerWidth;
+    HEIGHT = window.innerHeight;
+
+	windowHalfX = WIDTH / 2,
+	windowHalfY = HEIGHT / 2,
+
+	camera.aspect = WIDTH / HEIGHT;
+	camera.updateProjectionMatrix();
+
+	effect.setSize( WIDTH, HEIGHT );
+}
+
 function render() {
+    
+    var delta = clock.getDelta();
+    
     requestAnimationFrame(render);
     
     // Update bullet ("blast") positions
@@ -173,31 +265,15 @@ function render() {
     for (var i=0; i < asteroids.length; i++) {
         asteroids[i].move();
     }
-    
-
-    
-/*
-    // Check for any asteroid collisions with Ship
-    for (var vertexIndex = 0; vertexIndex < ship.mesh.geometry.vertices.length; vertexIndex++) {
-        var localVertex = ship.mesh.geometry.vertices[vertexIndex].clone();
-        var globalVertex = ship.mesh.matrix.multiplyVector3(localVertex);
-        var directionVector = globalVertex.subSelf( ship.position );
-    
-        var ray = new THREE.Ray( ship.position, directionVector.clone().normalize() );
-        var collisionResults = ray.intersectObjects( asteroids );
-        if ( collisionResults.length > 0 && collisionResults[0].distance < directionVector.length() ) {
-            console.log("SHIP WAS HIT BY ASTEROID!");
-        }
-    }
         
-*/
-    
     handleMapEdges();
     
-    if (DEBUG) {
-        controls.update();        
+    if (isMobileDevice()) {
+        controls.update(delta);   
     }
-    renderer.render(scene, camera);
+
+    effect.render( scene, camera );    
+    
     stats.update();
 };
 
@@ -239,6 +315,12 @@ function checkForBulletCollisions() {
                 // Remove this bullet.
                 scene.remove(blasts[i]);
                 blasts.splice(i, 1);
+                
+                if (asteroids.length == 0 && ship.lives > 0) {
+                    window.alert("You win! All asteroids destroyed.");
+                    increaseDifficulty();
+                    restartGame();
+                }
             }
         }
     }
@@ -254,12 +336,21 @@ function checkForShipCollisions() {
                 
             console.log("Asteroid hit the ship!");
             
+            // TODO: play sound when hit!
+            
             // Remove this asteroid once it hits the ship.
             scene.remove(asteroid);
             asteroids.splice(i, 1);
             
             ship.lives -= 1;
             if (ship.lives == 0) {
+                
+                // Play sound when game over
+                var done = new THREE.PositionalAudio( listener );
+                done.load('./audio/game-over.mp3');
+                ship.add(done);
+                done.play();
+                                
                 window.alert("No lives remaining. Game over!");
                 
                 restartGame();
@@ -268,11 +359,15 @@ function checkForShipCollisions() {
     }
 }
 
+function increaseDifficulty() {
+    NUM_ASTEROIDS += 5;
+}
+
 function restartGame() {
     ship.lives = 3;
     blasts.splice(0, blasts.length);
     asteroids.splice(0, asteroids.length);
-    addAsteroids(8);
+    addAsteroids(NUM_ASTEROIDS);
 }
 
 function asteroidHitsShip(asteroid, ship) {
@@ -358,17 +453,6 @@ kd.A.down(function () {
 kd.D.down(function () {
     ship.rotateRight();
 });
-
-function smoothSurface(m) {
-    if (m.geometry instanceof THREE.BufferGeometry) {
-        var geometry = new THREE.Geometry().fromBufferGeometry(m.geometry);
-        geometry.mergeVertices();
-        geometry.computeVertexNormals();
-        m.geometry = new THREE.BufferGeometry().fromGeometry(geometry);
-    } else {
-        m.geometry.computeVertexNormals();
-    }
-}
 
 function keydown(event) {
 	

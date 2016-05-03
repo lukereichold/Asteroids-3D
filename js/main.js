@@ -42,8 +42,9 @@ addSun();
 var clock = new THREE.Clock();
 
 
-// temporary:
-window.addEventListener('keydown', keydown);
+function tappedScreen() {
+    fireBlaster();
+}
 
 render();
 
@@ -52,6 +53,10 @@ function setup() {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+    
+    // Side button on Google Cardboard functions as a screen tap.
+    renderer.domElement.addEventListener("click", tappedScreen);
+
     
     // Camera
     var far = WORLD_SIZE * Math.sqrt(2); // diagonal of cube is max possible
@@ -234,11 +239,6 @@ function onWindowResize() {
 	effect.setSize( WIDTH, HEIGHT );
 }
 
-function is_touch_device() {
-  return 'ontouchstart' in window        // works on most browsers 
-      || 'onmsgesturechange' in window;  // works on IE10 with some false positives
-};
-
 
 function render() {
     
@@ -257,12 +257,6 @@ function render() {
             blasts.splice(i, 1);
         }
     }
-
-
-    if (is_touch_device()) {
-        fireBlaster();
-    }
-
 
 
     checkForBulletCollisions();
@@ -447,11 +441,10 @@ function fireBlaster() {
 
 
 // Keyboard controls for player motion. 
-/*
+
 kd.SPACE.down(function () {
     fireBlaster();
 });
-*/
 
 kd.W.down(function () {
     ship.isAccelerating = true;

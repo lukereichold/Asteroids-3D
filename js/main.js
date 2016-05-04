@@ -22,6 +22,9 @@ var raycaster = new THREE.Raycaster();
 
 var stats, camera, renderer, controls, listener, sun, effect;
 
+// Sounds:
+var asteroid_hit_sound, done_sound, ship_hit_sound;
+
 var alpha, beta, gamma;
 
 var BULLET_SPEED = 15, BULLET_RADIUS = 15;
@@ -67,6 +70,18 @@ function setup() {
     // Sound support
     listener = new THREE.AudioListener();
     camera.add(listener);
+    
+    asteroid_hit_sound = new THREE.Audio( listener );
+    asteroid_hit_sound.load('./audio/asteroid-hit.mp3');
+    asteroid_hit_sound.setVolume(5.0);
+    scene.add(asteroid_hit_sound);
+    
+    
+    game_over_sound = new THREE.Audio( listener );
+    game_over_sound.load('./audio/game-over.mp3');
+    game_over_sound.setVolume(5.0);
+    scene.add(game_over_sound);
+    
     
     if (DEBUG) {
         var axisHelper = new THREE.AxisHelper( WORLD_SIZE );
@@ -165,11 +180,30 @@ function addSun() {
     scene.add(sun);
 }
 
+function resetShip() {
+    ship.remove(camera);
+    scene.remove(ship);
+    ship = new Spaceship();
+        
+    addShipSound();
+    
+    ship.add(camera);
+    scene.add(ship);
+}
+
 function addShip() {
     ship = new Spaceship();
     camera.add(createCrosshairs());
+    addShipSound();
     ship.add(camera);
     scene.add(ship);
+}
+
+function addShipSound() {
+    ship_hit_sound = new THREE.PositionalAudio( listener );
+    ship_hit_sound.load('./audio/ship-hit.mp3');
+    ship_hit_sound.setVolume(5.0);
+    ship.add(ship_hit_sound);
 }
 
 function createCrosshairs() {
@@ -258,7 +292,9 @@ function onWindowResize() {
 	camera.aspect = WIDTH / HEIGHT;
 	camera.updateProjectionMatrix();
 
-	effect.setSize( WIDTH, HEIGHT );
+    if (isMobileDevice()) {
+        effect.setSize( WIDTH, HEIGHT );
+    }
 }
 
 
@@ -279,7 +315,6 @@ function render() {
             blasts.splice(i, 1);
         }
     }
-
 
     checkForBulletCollisions();
 
@@ -339,7 +374,9 @@ function checkForBulletCollisions() {
                 
                 console.log("Blast hit an asteroid!");
                 
-                // Remove this asteroid.
+                asteroid_hit_sound.play();
+                
+                // Remove this asteroid that we hit.
                 scene.remove(asteroids[j]);
                 asteroids.splice(j, 1);
                 
@@ -348,9 +385,11 @@ function checkForBulletCollisions() {
                 blasts.splice(i, 1);
                 
                 if (asteroids.length == 0 && ship.lives > 0) {
+                    
                     window.alert("You win! All asteroids destroyed.");
                     increaseDifficulty();
                     restartGame();
+                    resetShip();
                 }
             }
         }
@@ -366,30 +405,34 @@ function checkForShipCollisions() {
         if (asteroidHitsShip(asteroid, ship)) {
                 
             console.log("Asteroid hit the ship!");
-            
-            // TODO: play sound when hit!
-            
+                        
             // Remove this asteroid once it hits the ship.
             scene.remove(asteroid);
             asteroids.splice(i, 1);
             
             ship.lives -= 1;
-            if (ship.lives == 0) {
+            if (ship.lives <= 0) {
                 
                 // Play sound when game over
-                var done = new THREE.PositionalAudio( listener );
-                done.load('./audio/game-over.mp3');
-                ship.add(done);
-                done.play();
+                game_over_sound.play();
                                 
                 window.alert("No lives remaining. Game over!");
                 
                 // Go back to easy difficulty.
-                NUM_ASTEROIDS = DEFAULT_ASTEROIDS;
+                resetDifficulty();
                 restartGame();
+                resetShip();
+                break;
             }
+            
+            // Play sound if hit, but not game over yet. Don't want to play both.
+            ship_hit_sound.play();
         }
     }
+}
+
+function resetDifficulty() {
+    NUM_ASTEROIDS = DEFAULT_ASTEROIDS;
 }
 
 function increaseDifficulty() {
@@ -398,8 +441,17 @@ function increaseDifficulty() {
 
 function restartGame() {
     ship.lives = 3;
-    blasts.splice(0, blasts.length);
-    asteroids.splice(0, asteroids.length);
+    
+    for (var i=0; i < blasts.length; i++) {
+        scene.remove(blasts[i]);
+        blasts.splice(i, 1);
+    }
+    
+    for (var i=0; i < asteroids.length; i++) {
+        scene.remove(asteroids[i]);
+        asteroids.splice(i, 1);
+    } 
+    
     addAsteroids(NUM_ASTEROIDS);
 }
 
@@ -486,6 +538,7 @@ kd.D.down(function () {
     ship.rotateRight();
 });
 
+/* THIS IS FOR FIRING ONLY ONE BLAST AT A TIME.
 function keydown(event) {
 	
     switch (event.keyCode) {
@@ -494,3 +547,4 @@ function keydown(event) {
             break;
     }
 }
+*/

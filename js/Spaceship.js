@@ -71,6 +71,13 @@ Spaceship.prototype.move = function() {
     this.position.z = this.y;
 }
 
+// Set angle that camera / ship faces based on mobile device orientation.
+Spaceship.prototype.setAngle = function(angle) {
+
+    // Coming soon  
+      
+}
+
 Spaceship.prototype.rotateLeft = function() {
     this.rotateY(+this.rotationSpeed);
     this.angularPosition -= this.rotationSpeed;

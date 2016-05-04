@@ -13,7 +13,7 @@ var background_urls = [
     ];
 
 var WORLD_SIZE = 3000;
-var DEBUG = true;
+var DEBUG = false;
 var WIDTH = window.innerWidth;
 var HEIGHT = window.innerHeight;
 
@@ -21,6 +21,8 @@ var scene = new THREE.Scene();
 var raycaster = new THREE.Raycaster();
 
 var stats, camera, renderer, controls, listener, sun, effect;
+
+var alpha, beta, gamma;
 
 var BULLET_SPEED = 15, BULLET_RADIUS = 15;
 
@@ -80,13 +82,28 @@ function setup() {
             return;
         }
         
+        // This code will be executed by a mobile device:
+
+        alpha = e.alpha;
+        beta = e.beta;
+        gamma = e.gamma;
+
+/*
+        if (Math.abs(gamma) < 45) {
+            // Tilt phone toward ground to accelerate
+            ship.isAccelerating = true;
+        } else {
+            ship.isAccelerating = false;
+        }
+*/
+
+        
         controls = new THREE.DeviceOrientationControls(camera, true);
         controls.connect();
         controls.update();
 
         console.log("device orientation controls set!");
         
-        fullscreen();
 
         window.removeEventListener('deviceorientation', setOrientationControls, true);
     }   
@@ -94,17 +111,22 @@ function setup() {
     addSkybox();
 
     
-    if (!isMobileDevice()) {
-        addStats();
-    } else {
-        // By default, do full-screen mode on mobile.
+    // Only do stereo VR effects on mobile device.
+    if (isMobileDevice()) {
         fullscreen();
+        
+        effect = new THREE.StereoEffect(renderer);
+        effect.setSize(WIDTH, HEIGHT);
+    
+        window.addEventListener('deviceorientation', setOrientationControls, true);
+    } 
+    else {
+        // Set up instructional text for desktop users:
+        addStats();
+        $("#help-text").append("<span>A / D = Turn, W = Move, SPACE = Shoot</span>");
+
     }
     
-    effect = new THREE.StereoEffect(renderer);
-	effect.setSize(WIDTH, HEIGHT);
-    
-    window.addEventListener('deviceorientation', setOrientationControls, true);
 
 	window.addEventListener('resize', onWindowResize, false);
 }
@@ -277,9 +299,11 @@ function render() {
     
     if (isMobileDevice()) {
         controls.update(delta);   
+        effect.render( scene, camera );
     }
-
-    effect.render( scene, camera );    
+    else {
+        renderer.render(scene, camera);
+    }
     
     stats.update();
 };

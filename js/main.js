@@ -143,7 +143,7 @@ function setup() {
     }
     
 
-	window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('resize', onWindowResize, false);
 }
 
 function fullscreen() {
@@ -173,7 +173,7 @@ function isMobileDevice() {
 // Sun orb at origin will help ship know where center of map is.
 function addSun() {
     var radius = 30;
-	var material = new THREE.MeshLambertMaterial({ color:0xFFFF00 }); 
+    var material = new THREE.MeshLambertMaterial({ color:0xFFFF00 }); 
     var geometry = new THREE.SphereGeometry(radius, 18, 18);
     sun = new THREE.Mesh(geometry, material);
     sun.add(new THREE.PointLight(0xffff0f));
@@ -240,8 +240,8 @@ function addAsteroids(number) {
 }
 
 function addSkybox() {
-	   
-	var loader = new THREE.CubeTextureLoader();
+       
+    var loader = new THREE.CubeTextureLoader();
     var texture = loader.load( background_urls );
     texture.format = THREE.RGBFormat;
 
@@ -286,11 +286,11 @@ function onWindowResize() {
     WIDTH = window.innerWidth;
     HEIGHT = window.innerHeight;
 
-	windowHalfX = WIDTH / 2,
-	windowHalfY = HEIGHT / 2,
+    windowHalfX = WIDTH / 2,
+    windowHalfY = HEIGHT / 2,
 
-	camera.aspect = WIDTH / HEIGHT;
-	camera.updateProjectionMatrix();
+    camera.aspect = WIDTH / HEIGHT;
+    camera.updateProjectionMatrix();
 
     if (isMobileDevice()) {
         effect.setSize( WIDTH, HEIGHT );
@@ -481,10 +481,10 @@ function wrapAround(obj) {
     
     // If necessary, move obj to other side of map if we hit the map bounds.
     if (obj.x > WORLD_SIZE / 2) {
-    	obj.x = -WORLD_SIZE / 2;
-	} else if (obj.x < -WORLD_SIZE / 2) {
-    	obj.x = WORLD_SIZE / 2;
-	}
+        obj.x = -WORLD_SIZE / 2;
+    } else if (obj.x < -WORLD_SIZE / 2) {
+        obj.x = WORLD_SIZE / 2;
+    }
 
     if (obj.y > WORLD_SIZE / 2) {
         obj.y = -WORLD_SIZE / 2;
@@ -496,23 +496,23 @@ function wrapAround(obj) {
 
 // TODO: Limit the number of times per second this can be called.
 function fireBlaster() {
-	
+    
     console.log("Firing blaster!");
-	obj = ship;
-	
-	var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE});
-	var sphereGeo = new THREE.SphereGeometry(BULLET_RADIUS, 6, 6);
-	var sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
-	
-	// bullet starting position at ship
-	sphere.position.copy(obj.position);
-	sphere.rotation.copy(obj.rotation);
+    obj = ship;
+    
+    var sphereMaterial = new THREE.MeshBasicMaterial({color: 0xEEEEEE});
+    var sphereGeo = new THREE.SphereGeometry(BULLET_RADIUS, 6, 6);
+    var sphere = new THREE.Mesh(sphereGeo, sphereMaterial);
+    
+    // bullet starting position at ship
+    sphere.position.copy(obj.position);
+    sphere.rotation.copy(obj.rotation);
     sphere.translateZ(-ship.radius);
     sphere._direction = camera.getWorldDirection();
     sphere._life = 1;
     
-	blasts.push(sphere);
-	scene.add(sphere);
+    blasts.push(sphere);
+    scene.add(sphere);
 }
 
 
@@ -540,7 +540,7 @@ kd.D.down(function () {
 
 /* THIS IS FOR FIRING ONLY ONE BLAST AT A TIME.
 function keydown(event) {
-	
+    
     switch (event.keyCode) {
         case 32: // spacebar
             fireBlaster();

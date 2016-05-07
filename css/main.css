@@ -9,6 +9,18 @@ body {
 	text-align: center;
 }
 
+#game-stats {
+    background-color: #444444;
+    width: 100%;
+	text-align: center;
+	bottom: 0px;
+	position: fixed;
+}
+
 #help-text span {
 	color: #fff;
+}
+
+span {
+    color: #fff;
 }

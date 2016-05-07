@@ -2,6 +2,12 @@
 // Luke Reichold - CSCI 3820 
 // Final Project: Asteroids
 
+
+// ****
+// UPDATE LOG FOR FINAL EXAM PROGRESS:
+// see http://turing.slu.edu/~lreichol/csci3820/Final/Final.txt
+// ****
+
 // Populate array of skybox background images for later use.
 const SKYBOX_PATH = './cubemap/galaxy/';
 const format = '.png';
@@ -29,8 +35,8 @@ var alpha, beta, gamma;
 
 var BULLET_SPEED = 15, BULLET_RADIUS = 15;
 
-var DEFAULT_ASTEROIDS = 15;
-var NUM_ASTEROIDS = DEFAULT_ASTEROIDS;
+var DEFAULT_NUM_ASTEROIDS = 15;
+var NUM_ASTEROIDS = DEFAULT_NUM_ASTEROIDS;
 
 // Objects
 var ship;
@@ -42,7 +48,9 @@ setup();
 addLights();
 addShip()
 addAsteroids(NUM_ASTEROIDS);
-addSun();
+
+// Add initial game stats
+$("#game-stats").append("<span>" + getGameStatsString() + "</span>");
 
 var clock = new THREE.Clock();
 
@@ -51,7 +59,10 @@ function tappedScreen() {
     fireBlaster();
 }
 
-render();
+// Wait 1 sec before main render loop, so we don't erraneously invoke sounds before they're ready.
+setTimeout(function() {
+    render();
+}, 1000);
 
 function setup() {
     // Renderer
@@ -62,6 +73,7 @@ function setup() {
     // Side button on Google Cardboard functions as a screen tap.
     renderer.domElement.addEventListener("click", tappedScreen);
 
+    window.addEventListener('keydown', keydown);
     
     // Camera
     var far = WORLD_SIZE * Math.sqrt(2); // diagonal of cube is max possible
@@ -71,17 +83,22 @@ function setup() {
     listener = new THREE.AudioListener();
     camera.add(listener);
     
+
+    // Setup 3 possible sounds
     asteroid_hit_sound = new THREE.Audio( listener );
     asteroid_hit_sound.load('./audio/asteroid-hit.mp3');
     asteroid_hit_sound.setVolume(5.0);
     scene.add(asteroid_hit_sound);
-    
-    
+
     game_over_sound = new THREE.Audio( listener );
     game_over_sound.load('./audio/game-over.mp3');
     game_over_sound.setVolume(5.0);
     scene.add(game_over_sound);
-    
+
+    ship_hit_sound = new THREE.Audio( listener );
+    ship_hit_sound.load('./audio/ship-hit.mp3');
+    ship_hit_sound.setVolume(5.0);
+    scene.add(ship_hit_sound);
     
     if (DEBUG) {
         var axisHelper = new THREE.AxisHelper( WORLD_SIZE );
@@ -112,7 +129,6 @@ function setup() {
         }
 */
 
-        
         controls = new THREE.DeviceOrientationControls(camera, true);
         controls.connect();
         controls.update();
@@ -139,11 +155,19 @@ function setup() {
         // Set up instructional text for desktop users:
         addStats();
         $("#help-text").append("<span>A / D = Turn, W = Move, SPACE = Shoot</span>");
-
     }
     
 
     window.addEventListener('resize', onWindowResize, false);
+}
+
+function refreshGameStats() {
+    $("#game-stats span").remove();
+    $("#game-stats").append("<span>" + getGameStatsString() + "</span>");
+}
+
+function getGameStatsString() {
+    return "Playing \"Asteroids\" by Luke Reichold (Spring 2016) • Shields remaining: " + ship.lives + " • Remaining Asteroids: " + asteroids.length;
 }
 
 function fullscreen() {
@@ -171,6 +195,7 @@ function isMobileDevice() {
 }
 
 // Sun orb at origin will help ship know where center of map is.
+/*
 function addSun() {
     var radius = 30;
     var material = new THREE.MeshLambertMaterial({ color:0xFFFF00 }); 
@@ -179,14 +204,14 @@ function addSun() {
     sun.add(new THREE.PointLight(0xffff0f));
     scene.add(sun);
 }
+*/
 
 function resetShip() {
     ship.remove(camera);
     scene.remove(ship);
     ship = new Spaceship();
-        
-    addShipSound();
-    
+    ship.stop();
+
     ship.add(camera);
     scene.add(ship);
 }
@@ -194,16 +219,9 @@ function resetShip() {
 function addShip() {
     ship = new Spaceship();
     camera.add(createCrosshairs());
-    addShipSound();
+
     ship.add(camera);
     scene.add(ship);
-}
-
-function addShipSound() {
-    ship_hit_sound = new THREE.PositionalAudio( listener );
-    ship_hit_sound.load('./audio/ship-hit.mp3');
-    ship_hit_sound.setVolume(5.0);
-    ship.add(ship_hit_sound);
 }
 
 function createCrosshairs() {
@@ -273,14 +291,6 @@ function addStats() {
     container.appendChild( stats.domElement );
 }
 
-function addHelpText() {
-    container = document.createElement( 'div' );
-    help = document.createElement( 'span' );
-    help.innerHTML = "A / D = Turn, W = Move, SPACE = Shoot";
-    document.body.appendChild( container );
-    container.appendChild( help );
-}
-
 function onWindowResize() {
 
     WIDTH = window.innerWidth;
@@ -305,7 +315,7 @@ function render() {
     requestAnimationFrame(render);
     
     // Update bullet ("blast") positions
-    for (var i=0; i < blasts.length; i++){
+    for (var i=blasts.length -1; i >= 0; i--){
         blasts[i].translateZ(-BULLET_SPEED);
         blasts[i]._life += 1;
         
@@ -375,10 +385,12 @@ function checkForBulletCollisions() {
                 console.log("Blast hit an asteroid!");
                 
                 asteroid_hit_sound.play();
-                
+                                
                 // Remove this asteroid that we hit.
                 scene.remove(asteroids[j]);
                 asteroids.splice(j, 1);
+                
+                refreshGameStats();
                 
                 // Remove this bullet.
                 scene.remove(blasts[i]);
@@ -389,7 +401,6 @@ function checkForBulletCollisions() {
                     window.alert("You win! All asteroids destroyed.");
                     increaseDifficulty();
                     restartGame();
-                    resetShip();
                 }
             }
         }
@@ -398,19 +409,22 @@ function checkForBulletCollisions() {
 
 function checkForShipCollisions() {
     
-    for (var i=0; i < asteroids.length; i++) {
+    for (var i=asteroids.length - 1; i >= 0; i--) {
         
         var asteroid = asteroids[i];
         
         if (asteroidHitsShip(asteroid, ship)) {
                 
             console.log("Asteroid hit the ship!");
-                        
+                                                
             // Remove this asteroid once it hits the ship.
             scene.remove(asteroid);
             asteroids.splice(i, 1);
             
             ship.lives -= 1;
+            
+            refreshGameStats();
+            
             if (ship.lives <= 0) {
                 
                 // Play sound when game over
@@ -421,38 +435,49 @@ function checkForShipCollisions() {
                 // Go back to easy difficulty.
                 resetDifficulty();
                 restartGame();
-                resetShip();
-                break;
+            }
+            else if (asteroids.length <= 0) {
+                // Otherwise, we win if last asteroid is destroyed and ship is still alive.
+                window.alert("You win! All asteroids destroyed.");
+                increaseDifficulty();
+                restartGame();
+            } 
+            else {
+                // Play sound if hit, but not game over yet. Don't want to play both.
+                ship_hit_sound.play();
             }
             
-            // Play sound if hit, but not game over yet. Don't want to play both.
-            ship_hit_sound.play();
         }
     }
 }
 
 function resetDifficulty() {
-    NUM_ASTEROIDS = DEFAULT_ASTEROIDS;
+    NUM_ASTEROIDS = DEFAULT_NUM_ASTEROIDS;
 }
 
 function increaseDifficulty() {
+    console.log("Increasing # ASTEROIDS from " + NUM_ASTEROIDS + " to " + NUM_ASTEROIDS + 5); 
     NUM_ASTEROIDS += 5;
 }
 
 function restartGame() {
-    ship.lives = 3;
     
-    for (var i=0; i < blasts.length; i++) {
+    // Remove any bullets or asteroids still in the scene
+    for (var i=blasts.length - 1; i >= 0; i--) {
         scene.remove(blasts[i]);
         blasts.splice(i, 1);
     }
     
-    for (var i=0; i < asteroids.length; i++) {
+    for (var i=asteroids.length - 1; i >= 0; i--) {
         scene.remove(asteroids[i]);
         asteroids.splice(i, 1);
-    } 
+    }
+    
+    resetShip();
     
     addAsteroids(NUM_ASTEROIDS);
+    
+    refreshGameStats();
 }
 
 function asteroidHitsShip(asteroid, ship) {
@@ -518,9 +543,11 @@ function fireBlaster() {
 
 // Keyboard controls for player motion. 
 
+/*
 kd.SPACE.down(function () {
     fireBlaster();
 });
+*/
 
 kd.W.down(function () {
     ship.isAccelerating = true;
@@ -538,7 +565,7 @@ kd.D.down(function () {
     ship.rotateRight();
 });
 
-/* THIS IS FOR FIRING ONLY ONE BLAST AT A TIME.
+// THIS IS FOR FIRING ONLY ONE BLAST AT A TIME.
 function keydown(event) {
     
     switch (event.keyCode) {
@@ -547,4 +574,3 @@ function keydown(event) {
             break;
     }
 }
-*/

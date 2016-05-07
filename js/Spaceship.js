@@ -17,7 +17,7 @@ var Spaceship = function() {
     self.vx = 0.0;
     self.vy = 0.0;
     
-    // Start with 3 lives by default
+    // Start with 3 lives / "shields" by default
     self.lives = 3;
     
     self.radius = 30;
@@ -75,6 +75,14 @@ Spaceship.prototype.move = function() {
 Spaceship.prototype.setAngle = function(angle) {
 
     // Coming soon  
+      
+}
+
+Spaceship.prototype.stop = function() {
+
+    this.vx = 0.0;
+    this.vy = 0.0;
+    this.isAccelerating = false;
       
 }
 

@@ -1,0 +1,23 @@
+# Final Exam Progress
+
+## Done - Suggested features:
+- (60 pt) progress label
+- (10 pt) added name / date
+- (20 pt) Fixed "Audio Buffer" sound error
+- (60 pt) Asteroids now vary in both size and color
+
+## Done - Other vital fixes / enhancements:
+- fixed edge case where game didn't end when last asteroid was destroyed by hitting ship w/ at least 1 shield
+- simplified initial asteroid starting positions; refactored ship collision logic
+- Refactored 'game / ship reset' functionality
+- Now iterate over asteroids and bullets array in reverse in order to prevent logic error where asteroids are not completely removed on game reset.
+- Fixed error that caused lingering bullets upon game reset
+
+## Other notes:
+- removed "sun" object, so it's not confused for an asteroid
+- updated my screenshot
+- all these changes are tracked via git in my /WWW project directory
+- identified a bug -- after end of game the ship still starts with some velocity if ship died while holding down arrow keys.
+    - to fix this, try stopping listening for keyboard events as soon as window alert, and resume listener at the end of resetShip()
+    - this will prevent a build-up of pending ship.accelerate() calls
+- Eventually I plan on modifying DeviceOrientationControls so I can appropriately 1) accelerate and 2) update the shoot direction when played using Google Cardboard on a mobile device.
